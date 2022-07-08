@@ -3,21 +3,17 @@ import pytest
 
 
 def test_make_one_point():
-    p1 = Point("Dakar", 14.7167, 17.4677)
-    assert p1.get_lat_long() == (14.7167, 17.4677)
+    p1 = Point("Medellin", 13.4432, 17.6345)
+    assert p1.latitiude_longitude == (13.4432, 17.6345)
 
 
 def test_invalid_point_generation():
     with pytest.raises(ValueError) as exp:
-        Point("Senegal", 99.6937, -189.44406)
+        Point("Medellin", 0, -1500)
     assert str(exp.value) == "Invalid latitude, longitude combination."
 
-    """
-    Your solution here! You will need to edit the following source code
-    file to get your test running:
+    with pytest.raises(TypeError) as exp:
+        Point(12, 0, -105)
+    assert str(exp.value) == "Invalid city, must be a string"
 
-        File path:
-        scripts/chp2/video4/mapmaker_challenge import
 
-    It has already been imported for you on the first line of this file
-    """
