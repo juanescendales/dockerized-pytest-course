@@ -4,17 +4,21 @@ from scripts import data_processor
 
 @pytest.fixture(scope="module")
 def city_list_location():
-    return 'tests/resources/cities/clean_map.csv'
+    return 'tests/resources/cities/'
 
 
 @pytest.fixture(scope="module")
 def process_data(city_list_location):
-    yield data_processor.csv_reader(city_list_location)
+    def _specify_type(file_name_or_type: str):
+        file_location = city_list_location + file_name_or_type
+        data = None
+        if file_name_or_type.endswith(".json"):
+            data = data_processor.json_reader(file_location)
+        elif file_name_or_type.endswith(".csv"):
+            data = data_processor.csv_reader(file_location)
+        return data
 
-
-@pytest.fixture(scope="function")
-def city_list_location_malformed():
-    return 'tests/resources/cities/malformed_map.csv'
+    yield _specify_type
 
 
 def test_csv_reader_header_fields(process_data):
@@ -22,7 +26,7 @@ def test_csv_reader_header_fields(process_data):
     Happy Path test to make sure the processed data
     contains the right header fields
     """
-    data = process_data
+    data = process_data("clean_map.csv")
     header_fields = list(data[0].keys())
     assert header_fields == [
             'Country',
@@ -39,7 +43,7 @@ def test_csv_reader_data_contents(process_data):
     Happy Path Test to examine that each row
     had the appropriate data type per field
     """
-    data = process_data
+    data = process_data("clean_map.csv")
 
     # Check row types
     for row in data:
@@ -56,10 +60,10 @@ def test_csv_reader_data_contents(process_data):
     assert data[106]['Country'] == 'Japan'
 
 
-def test_csv_reader_malformed_data_contents(city_list_location_malformed):
+def test_csv_reader_malformed_data_contents(process_data):
     """
     Sad Path Test
     """
     with pytest.raises(ValueError) as exp:
-        data_processor.csv_reader(city_list_location_malformed)
+        process_data("malformed_map.csv")
     assert str(exp.value) == "could not convert string to float: 'not_an_altitude'"
